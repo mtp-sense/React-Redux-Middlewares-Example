@@ -1,17 +1,42 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom";
+import "./index.css";
+import App from "./App";
+import { createStore, applyMiddleware } from "redux";
+import { Provider } from "react-redux";
+import thunk from "redux-thunk";
+import createSagaMiddleware from "redux-saga";
+import { watcherSaga } from "./sagas";
+
+const initialState = {
+  counter: 0,
+  posts: [],
+  users: [],
+};
+
+function reducer(state = initialState, action) {
+  switch (action.type) {
+    case "INC":
+      return { ...state, counter: state.counter + action.payload };
+    case "DEC":
+      return { ...state, counter: state.counter - action.payload };
+    case "RESET":
+      return initialState;
+    case "GET_POSTS":
+      return { ...state, posts: action.payload };
+    case "GET_USERS":
+      return { ...state, users: action.payload };
+    default:
+      return state;
+  }
+}
+const saga = createSagaMiddleware();
+const store = createStore(reducer, applyMiddleware(thunk, saga));
+saga.run(watcherSaga);
 
 ReactDOM.render(
-  <React.StrictMode>
+  <Provider store={store}>
     <App />
-  </React.StrictMode>,
-  document.getElementById('root')
+  </Provider>,
+  document.getElementById("root")
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
